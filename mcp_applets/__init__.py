@@ -1,0 +1,1 @@
+"""MCP Applets package — WeilChain-native tool servers for AuditChain."""

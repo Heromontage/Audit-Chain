@@ -1,0 +1,1 @@
+"""AuditChain — FastAPI routes package."""
