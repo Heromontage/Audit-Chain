@@ -1,0 +1,60 @@
+# ──────────────────────────────────────────────────────────────
+# AuditChain — Development Commands
+# ──────────────────────────────────────────────────────────────
+
+.PHONY: dev backend frontend install test lint clean help
+
+# ── Default ───────────────────────────────────────────────────
+
+help: ## Show this help
+	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | \
+		awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-15s\033[0m %s\n", $$1, $$2}'
+
+# ── Install ───────────────────────────────────────────────────
+
+install: ## Install all dependencies (Python + Node)
+	pip install -r requirements.txt
+	npm install
+
+# ── Development ───────────────────────────────────────────────
+
+dev: ## Start both backend + frontend concurrently
+	@echo "🚀 Starting AuditChain..."
+	@echo "   Backend  → http://localhost:8000"
+	@echo "   Frontend → http://localhost:5173"
+	@echo "   API Docs → http://localhost:8000/docs"
+	@echo ""
+	@make -j2 backend frontend
+
+backend: ## Start FastAPI backend (port 8000)
+	python main.py
+
+frontend: ## Start Vite frontend (port 5173)
+	npm run dev
+
+# ── Testing ───────────────────────────────────────────────────
+
+test: ## Run pytest test suite
+	pytest tests/ -v --tb=short
+
+test-api: ## Run API smoke tests only
+	pytest tests/test_api.py -v --tb=short
+
+# ── Code Quality ──────────────────────────────────────────────
+
+lint: ## Run ruff linter
+	ruff check . --fix
+	ruff format .
+
+# ── Cleanup ───────────────────────────────────────────────────
+
+clean: ## Remove caches and build artifacts
+	find . -type d -name __pycache__ -exec rm -rf {} + 2>/dev/null || true
+	find . -type d -name .pytest_cache -exec rm -rf {} + 2>/dev/null || true
+	find . -type d -name .ruff_cache -exec rm -rf {} + 2>/dev/null || true
+	rm -rf dist/ build/ node_modules/.cache/
+
+# ── WeilChain ─────────────────────────────────────────────────
+
+deploy-applet: ## Deploy MCP applet to WeilChain testnet
+	weil applet deploy mcp_applets/ --network testnet
